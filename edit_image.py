@@ -1,23 +1,26 @@
 from PIL import Image
 from io import BytesIO
-from Projects.Telegram_API.all_data import all_data
+from all_data import all_data
 
 
-def byte_convert(bytes_stream):
+def open_image(filename):
+    return Image.open(filename)
+
+
+def convert_bytes(bytes_stream):
     return Image.open(BytesIO(bytes_stream)).convert("RGBA")
 
 
-def combine(image_name, other_image, file_id):
-
+def combine(image_name, file_id, other_image):
     image_data = all_data["images"][image_name]
 
     if image_data["mode"] == "bg":
-        background = Image.open(image_data["path"])
+        background = Image.open(image_data["path"]).convert("RGBA")
         foreground = other_image.resize(image_data["paste_image_size"])
         pos_to_paste = image_data["pos_to_paste"]
 
     elif image_data["mode"] == "fg":
-        foreground = Image.open(image_data["path"])
+        foreground = Image.open(image_data["path"]).convert("RGBA")
         background = other_image
 
         indent_x, indent_y = image_data["indent_x"], image_data["indent_y"]
@@ -28,9 +31,5 @@ def combine(image_name, other_image, file_id):
     else:
         return
 
-    background = background.convert("RGBA")
-    foreground = foreground.convert("RGBA")
-
-    background.paste(foreground, pos_to_paste, mask=foreground)
-
+    background.paste(foreground, pos_to_paste)
     background.convert("RGB").save("temp/{}.jpg".format(file_id), "JPEG")

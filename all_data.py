@@ -1,4 +1,5 @@
 all_data = {
+    "TOKEN": "508716388:AAGTPYwsumxdmWfuKLVPhFSK9ZpNRBeTIMY",
     "images": {
         "brazzers": {
             "mode": "fg",
