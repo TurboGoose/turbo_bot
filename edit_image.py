@@ -16,12 +16,12 @@ def combine(image_name, file_id, other_image):
 
     if image_data["mode"] == "bg":
         background = Image.open(image_data["path"]).convert("RGBA")
-        foreground = other_image.resize(image_data["paste_image_size"])
+        foreground = other_image.copy().resize(image_data["paste_image_size"])
         pos_to_paste = image_data["pos_to_paste"]
 
     elif image_data["mode"] == "fg":
         foreground = Image.open(image_data["path"]).convert("RGBA")
-        background = other_image
+        background = other_image.copy()
 
         indent_x, indent_y = image_data["indent_x"], image_data["indent_y"]
         x = background.size[0] - foreground.size[0] + indent_x if indent_x < 0 else indent_x
