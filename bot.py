@@ -1,9 +1,10 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from all_data import all_data
-from edit_image import open_image
-from geocoder import geocode, static
-from do_requests import send_image, download_image, delete_temp_image
+from image_module import open_image
+from geo_module import geocode, static
+from request_module import send_image, load_image, delete_temp_image
+import os
 
 
 # --------------------  DEFAULT -------------------- #
@@ -14,7 +15,7 @@ def start(bot, update, user_data):
     user_data["chat_id"] = update.message.chat_id
 
     photo_list = bot.get_user_profile_photos(update.message.from_user.id)["photos"]
-    if not photo_list or not download_image(photo_list[0][-1], user_data):
+    if not photo_list or not load_image(photo_list[0][-1], user_data):
         user_data["current_image"] = open_image("data/patric.jpg")
         user_data["image_id"] = "default"
 
@@ -23,17 +24,26 @@ def start(bot, update, user_data):
 
 def help(bot, update):
     update.message.reply_text(
-        "Данный бот создан для увеселения людей и не представляет\n"
-        "                   из себя чего-то незаурядного.\n"
-        "-------------------------------------------------------------------------------\n"
-        "    На данный момент доступны следующие возможности:\n\n"
-        "-- Обработка изображений за счет веселых фильтров:\n"
-        "    --- По умолчанию берется аватарка со страницы.\n"
-        "    --- Есть возможность загрузить свою фотографию\n"
-        "                  (ОСТОРОЖНО: СЖАТИЕ).\n\n"
-        "-- Географический тест.\n"
-        "-- Поиск объектов на карте.\n\n"
-        "                   РАЗВЛЕКАЙТЕСЬ!"
+        "МУЛЬТИМЕДИА-БОТ\n\n"
+        "На данный момент доступно 2 основных функции:\n"
+        "1) Работа с изображениями - /image\n"
+        "2) Работа с географическими объектами - /place\n\n"
+        "ИЗОБРАЖЕНИЯ:\n"
+        "При работе с изображениями по умолчанию берется фотография с"
+        "аватарки и выборочно преобразуется за счет встроенных фильтров."
+        "Кроме того пользователь может загрузить любое изображение и в дальнейшем"
+        "все преобразования будут проходить именно с ним (от сжатия никто не застрахован).\n\n"
+        "ГЕОГРАФИЯ:\n"
+        "При работе с геграфическими объектами вы можете выбрать 2 режима:\n\n"
+        "1) Географический тест\n"
+        "    Тест на знание географии.\n"
+        "2) Поиск геграфических объектов\n"
+        "    Поиск введенного геграфического объекта (из сообщения).\n"
+        "    В случае успеха бот присылает картинку объекта и краткое\n"
+        "    описание.\n\n"
+        "Используемые API :\n"
+        ">>> Telegram API\n"
+        ">>> Yandex Maps API"
         )
 
 
@@ -62,7 +72,7 @@ def back_to_menu(bot, update):
 def get_picture(bot, update, user_data):
     update.message.reply_text("Загрузка фотографии...")
     delete_temp_image(user_data)
-    if download_image(update.message.photo[0], user_data):
+    if load_image(update.message.photo[0], user_data):
         update.message.reply_text("Фотография загружена.")
     else:
         update.message.reply_text("Ошибка загрузки.")
@@ -85,11 +95,6 @@ def disabilities(bot, update, user_data):
 
 def rip(bot, update, user_data):
     if not send_image("rip", user_data):
-        update.message.reply_text("Ошибка отправки.")
-
-
-def brazzers(bot, update, user_data):
-    if not send_image("brazzers", user_data):
         update.message.reply_text("Ошибка отправки.")
 
 
@@ -119,7 +124,6 @@ def back_to_place_menu(bot, update):
 
 #    >>>--------  GEO TEST  --------<<<
 def ask_question(bot, update, user_data):
-    # a = update.message.text
     cur_question = user_data["cur_question"]
     if cur_question < len(all_data["geo_test"]["questions"]):
         question_data = all_data["geo_test"]["questions"][cur_question]
@@ -149,7 +153,7 @@ def check_answer(bot, update, user_data):
 
 
 def show_result(bot, update, user_data):
-    smiles = "\U0001F64A" * (user_data["test_score"] + 1) if user_data["test_score"] > 0 else "\U0001F621"
+    smiles = "\U0001F64A" * (user_data["test_score"]) if user_data["test_score"] > 0 else "\U0001F621"
     update.message.reply_text("Ваш результат: " + smiles + "/10")
 
 
@@ -163,7 +167,7 @@ def new_place(bot, update):
 
 menu_markup = ReplyKeyboardMarkup([["/image"], ["/place"]])
 image_markup = ReplyKeyboardMarkup([["/cancer", "/delete", "/disabilities"],
-                                    ["/RIP", "/brazzers", "/ban"], ["/menu"]])
+                                    ["/RIP", "/ban"], ["/menu"]])
 place_markup = ReplyKeyboardMarkup([["/geo_test", "/walk"], ["/menu"]])
 geo_markup = ReplyKeyboardMarkup([["/back"]])
 test_markup = markup = ReplyKeyboardMarkup([["/yes", "/no"]])
@@ -186,7 +190,6 @@ def main():
                 CommandHandler("delete", delete, pass_user_data=True),
                 CommandHandler("disabilities", disabilities, pass_user_data=True),
                 CommandHandler("RIP", rip, pass_user_data=True),
-                CommandHandler("brazzers", brazzers, pass_user_data=True),
                 CommandHandler("ban", ban, pass_user_data=True),
                 CommandHandler("menu", back_to_menu)],
 
@@ -218,4 +221,9 @@ def main():
 
 
 if __name__ == '__main__':
+    if "temp" not in os.listdir("."):
+        os.mkdir("temp")
+    else:
+        for file in os.listdir("temp"):
+            os.remove("temp/" + file)
     main()

@@ -1,12 +1,12 @@
 import requests
 
 
-def get_ll_spn(toponym):
-    envelope = toponym["boundedBy"]["Envelope"]
+def get_ll_spn(j_toponym):
+    envelope = j_toponym["boundedBy"]["Envelope"]
     low_lon,  low_lat = map(lambda x: float(x), envelope["lowerCorner"].split())
     up_lon, up_lat = map(lambda x: float(x), envelope["upperCorner"].split())
     spn = str(up_lon - low_lon) + "," + str(up_lat - low_lat)
-    ll = ",".join(toponym["Point"]["pos"].split())
+    ll = ",".join(j_toponym["Point"]["pos"].split())
     return ll, spn
 
 
@@ -32,8 +32,8 @@ def geocode(toponym, annotation=False):
                 return params, toponym[0]["GeoObject"]["metaDataProperty"]["GeocoderMetaData"]["text"]
             return params
 
-    except Exception as e:
-        print(e)
+    except Exception as err:
+        print(err)
 
 
 def static(params):
@@ -42,6 +42,5 @@ def static(params):
         static_url = "http://static-maps.yandex.ru/1.x/"
         return static_url + "?" + "&".join(map(lambda x: x + "=" + params[x], params))
 
-    except Exception as e:
-        print(e)
-
+    except Exception as err:
+        print(err)

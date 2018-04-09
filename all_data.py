@@ -1,12 +1,6 @@
 all_data = {
     "TOKEN": "508716388:AAGTPYwsumxdmWfuKLVPhFSK9ZpNRBeTIMY",
     "images": {
-        "brazzers": {
-            "mode": "fg",
-            "path": "data/brazzers.png",
-            "indent_x": -10,
-            "indent_y": -10
-        },
         "rip": {
             "mode": "bg",
             "path": "data/rip.png",
